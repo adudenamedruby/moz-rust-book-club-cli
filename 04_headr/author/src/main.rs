@@ -1,42 +1,60 @@
 use anyhow::Result;
-use clap::Parser;
+use clap::{Arg, Command};
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, Read};
+use std::io::{self, BufRead, BufReader};
 
-#[derive(Parser, Debug)]
-#[command(author, version, about)]
-/// Rust version of `head`
+#[derive(Debug)]
 struct Args {
-    /// Input file(s)
-    #[arg(default_value = "-", value_name = "FILE")]
     files: Vec<String>,
-
-    /// Number of lines
-    #[arg(
-        short('n'),
-        long,
-        default_value = "10",
-        value_name = "LINES",
-        value_parser = clap::value_parser!(u64).range(1..)
-    )]
     lines: u64,
-
-    /// Number of bytes
-    #[arg(
-        short('c'),
-        long,
-        value_name = "BYTES",
-        conflicts_with("lines"),
-        value_parser = clap::value_parser!(u64).range(1..)
-    )]
     bytes: Option<u64>,
 }
 
 // --------------------------------------------------
 fn main() {
-    if let Err(e) = run(Args::parse()) {
+    if let Err(e) = run(get_args()) {
         eprintln!("{e}");
         std::process::exit(1);
+    }
+}
+
+// --------------------------------------------------
+fn get_args() -> Args {
+    let matches = Command::new("headr")
+        .version("0.1.0")
+        .author("Ken Youens-Clark <kyclark@gmail.com>")
+        .about("Rust version of `head`")
+        .arg(
+            Arg::new("lines")
+                .short('n')
+                .long("lines")
+                .value_name("LINES")
+                .help("Number of lines")
+                .value_parser(clap::value_parser!(u64).range(1..))
+                .default_value("10"),
+        )
+        .arg(
+            Arg::new("bytes")
+                .short('c')
+                .long("bytes")
+                .value_name("BYTES")
+                .conflicts_with("lines")
+                .value_parser(clap::value_parser!(u64).range(1..))
+                .help("Number of bytes"),
+        )
+        .arg(
+            Arg::new("files")
+                .value_name("FILE")
+                .help("Input file(s)")
+                .num_args(0..)
+                .default_value("-"),
+        )
+        .get_matches();
+
+    Args {
+        files: matches.get_many("files").unwrap().cloned().collect(),
+        lines: matches.get_one("lines").cloned().unwrap(),
+        bytes: matches.get_one("bytes").cloned(),
     }
 }
 

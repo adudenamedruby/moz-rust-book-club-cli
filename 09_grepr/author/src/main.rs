@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use clap::Parser;
+use clap::{Arg, ArgAction, Command};
 use regex::{Regex, RegexBuilder};
 use std::{
     fs::{self, File},
@@ -8,40 +8,80 @@ use std::{
 };
 use walkdir::WalkDir;
 
-#[derive(Debug, Parser)]
-#[command(author, version, about)]
-/// Rust version of `grep`
+#[derive(Debug)]
 struct Args {
-    /// Search pattern
-    #[arg()]
     pattern: String,
-
-    /// Input file(s)
-    #[arg(default_value = "-", value_name = "FILE")]
     files: Vec<String>,
-
-    /// Case-insensitive
-    #[arg(short, long)]
     insensitive: bool,
-
-    /// Recursive search
-    #[arg(short, long)]
     recursive: bool,
-
-    /// Count occurrences
-    #[arg(short, long)]
     count: bool,
-
-    /// Invert match
-    #[arg(short('v'), long("invert-match"))]
     invert: bool,
 }
 
 // --------------------------------------------------
 fn main() {
-    if let Err(e) = run(Args::parse()) {
-        eprintln!("{}", e);
+    if let Err(e) = run(get_args()) {
+        eprintln!("{e}");
         std::process::exit(1);
+    }
+}
+
+// --------------------------------------------------
+fn get_args() -> Args {
+    let matches = Command::new("grepr")
+        .version("0.1.0")
+        .author("Ken Youens-Clark <kyclark@gmail.com>")
+        .about("Rust version of `grep`")
+        .arg(
+            Arg::new("pattern")
+                .value_name("PATTERN")
+                .help("Search pattern")
+                .required(true),
+        )
+        .arg(
+            Arg::new("files")
+                .value_name("FILE")
+                .help("Input file(s)")
+                .num_args(1..)
+                .default_value("-"),
+        )
+        .arg(
+            Arg::new("insensitive")
+                .short('i')
+                .long("insensitive")
+                .help("Case-insensitive")
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("recursive")
+                .short('r')
+                .long("recursive")
+                .help("Recursive search")
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("count")
+                .short('c')
+                .long("count")
+                .help("Count occurrences")
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("invert")
+                .short('v')
+                .long("invert-match")
+                .help("Invert match")
+                .action(ArgAction::SetTrue),
+        )
+        .get_matches();
+
+    Args {
+        pattern: matches.get_one("pattern").cloned().unwrap(),
+        files: matches.get_many("files").unwrap().cloned().collect(),
+        insensitive: matches.get_flag("insensitive"),
+        recursive: matches.get_flag("recursive"),
+        count: matches.get_flag("count"),
+        invert: matches.get_flag("invert"),
     }
 }
 
@@ -82,7 +122,6 @@ fn run(args: Args) -> Result<()> {
             },
         }
     }
-
     Ok(())
 }
 
@@ -158,7 +197,6 @@ fn find_files(paths: &[String], recursive: bool) -> Vec<Result<String>> {
 #[cfg(test)]
 mod tests {
     use super::{find_files, find_lines};
-    use pretty_assertions::assert_eq;
     use rand::{distributions::Alphanumeric, Rng};
     use regex::{Regex, RegexBuilder};
     use std::io::Cursor;
@@ -214,7 +252,7 @@ mod tests {
         let res = find_files(&["./tests/inputs".to_string()], true);
         let mut files: Vec<String> = res
             .iter()
-            .map(|r| r.as_ref().unwrap().replace("\\", "/"))
+            .map(|r| r.as_ref().unwrap().replace('\\', "/"))
             .collect();
         files.sort();
         assert_eq!(files.len(), 4);

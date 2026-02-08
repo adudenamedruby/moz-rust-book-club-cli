@@ -1,36 +1,12 @@
 use anyhow::Result;
-use clap::{builder::PossibleValue, ArgAction, Parser, ValueEnum};
+use clap::{builder::PossibleValue, Arg, ArgAction, Command, ValueEnum};
 use regex::Regex;
 use walkdir::{DirEntry, WalkDir};
 
-#[derive(Debug, Parser)]
-#[command(author, version, about)]
-/// Rust version of `find`
+#[derive(Debug)]
 struct Args {
-    /// Search path(s)
-    #[arg(value_name = "PATH", default_value = ".")]
     paths: Vec<String>,
-
-    /// Names
-    #[arg(
-        short('n'),
-        long("name"),
-        value_name = "NAME",
-        value_parser(Regex::new),
-        action(ArgAction::Append),
-        num_args(0..)
-    )]
     names: Vec<Regex>,
-
-    /// Entry types
-    #[arg(
-        short('t'),
-        long("type"),
-        value_name = "TYPE",
-        value_parser(clap::value_parser!(EntryType)),
-        action(ArgAction::Append),
-        num_args(0..)
-    )]
     entry_types: Vec<EntryType>,
 }
 
@@ -57,9 +33,59 @@ impl ValueEnum for EntryType {
 
 // --------------------------------------------------
 fn main() {
-    if let Err(e) = run(Args::parse()) {
-        eprintln!("{}", e);
+    if let Err(e) = run(get_args()) {
+        eprintln!("{e}");
         std::process::exit(1);
+    }
+}
+
+// --------------------------------------------------
+fn get_args() -> Args {
+    let matches = Command::new("findr")
+        .version("0.1.0")
+        .author("Ken Youens-Clark <kyclark@gmail.com>")
+        .about("Rust version of `find`")
+        .arg(
+            Arg::new("paths")
+                .value_name("PATH")
+                .help("Search paths")
+                .default_value(".")
+                .num_args(0..),
+        )
+        .arg(
+            Arg::new("names")
+                .value_name("NAME")
+                .short('n')
+                .long("name")
+                .help("Name")
+                .value_parser(Regex::new)
+                .action(ArgAction::Append)
+                .num_args(0..),
+        )
+        .arg(
+            Arg::new("types")
+                .value_name("TYPE")
+                .short('t')
+                .long("type")
+                .help("Entry type")
+                .value_parser(clap::value_parser!(EntryType))
+                .action(ArgAction::Append)
+                .num_args(0..),
+        )
+        .get_matches();
+
+    Args {
+        paths: matches.get_many("paths").unwrap().cloned().collect(),
+        names: matches
+            .get_many("names")
+            .unwrap_or_default()
+            .cloned()
+            .collect(),
+        entry_types: matches
+            .get_many("types")
+            .unwrap_or_default()
+            .cloned()
+            .collect(),
     }
 }
 

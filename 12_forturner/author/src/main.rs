@@ -1,5 +1,5 @@
 use anyhow::{anyhow, bail, Result};
-use clap::Parser;
+use clap::{Arg, ArgAction, Command};
 use rand::prelude::SliceRandom;
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 use regex::RegexBuilder;
@@ -11,24 +11,11 @@ use std::{
 };
 use walkdir::WalkDir;
 
-#[derive(Debug, Parser)]
-#[command(author, version, about)]
-/// Rust version of `fortune`
+#[derive(Debug)]
 struct Args {
-    /// Input files or directories
-    #[arg(required(true), value_name = "FILE")]
     sources: Vec<String>,
-
-    /// Pattern
-    #[arg(short('m'), long)]
     pattern: Option<String>,
-
-    /// Case-insensitive pattern matching
-    #[arg(short, long)]
     insensitive: bool,
-
-    /// Random seed
-    #[arg(short, long, value_parser(clap::value_parser!(u64)))]
     seed: Option<u64>,
 }
 
@@ -40,9 +27,54 @@ struct Fortune {
 
 // --------------------------------------------------
 fn main() {
-    if let Err(e) = run(Args::parse()) {
+    if let Err(e) = run(get_args()) {
         eprintln!("{e}");
         std::process::exit(1);
+    }
+}
+
+// --------------------------------------------------
+fn get_args() -> Args {
+    let matches = Command::new("fortuner")
+        .version("0.1.0")
+        .author("Ken Youens-Clark <kyclark@gmail.com>")
+        .about("Rust version of `fortune`")
+        .arg(
+            Arg::new("sources")
+                .value_name("FILE")
+                .num_args(1..)
+                .required(true)
+                .help("Input files or directories"),
+        )
+        .arg(
+            Arg::new("pattern")
+                .value_name("PATTERN")
+                .short('m')
+                .long("pattern")
+                .help("Pattern"),
+        )
+        .arg(
+            Arg::new("insensitive")
+                .short('i')
+                .long("insensitive")
+                .help("Case-insensitive pattern matching")
+                .action(ArgAction::SetTrue),
+        )
+        .arg(
+            Arg::new("seed")
+                .value_name("SEED")
+                .short('s')
+                .long("seed")
+                .value_parser(clap::value_parser!(u64))
+                .help("Random seed"),
+        )
+        .get_matches();
+
+    Args {
+        sources: matches.get_many("sources").unwrap().cloned().collect(),
+        seed: matches.get_one("seed").cloned(),
+        pattern: matches.get_one("pattern").cloned(),
+        insensitive: matches.get_flag("insensitive"),
     }
 }
 

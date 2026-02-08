@@ -76,6 +76,13 @@ fn dies_both_stdin() -> Result<()> {
 
 // --------------------------------------------------
 fn run(args: &[&str], expected_file: &str) -> Result<()> {
+    //let expected = fs::read_to_string(expected_file)?;
+    //Command::cargo_bin(PRG)?
+    //    .args(args)
+    //    .assert()
+    //    .success()
+    //    .stdout(expected);
+
     let expected = fs::read_to_string(expected_file)?;
     let output = Command::cargo_bin(PRG)?.args(args).output().expect("fail");
     assert!(output.status.success());
@@ -92,6 +99,13 @@ fn run_stdin(
     expected_file: &str,
 ) -> Result<()> {
     let input = fs::read_to_string(input_file)?;
+    //let expected = fs::read_to_string(expected_file)?;
+    //Command::cargo_bin(PRG)?
+    //    .args(args)
+    //    .write_stdin(input)
+    //    .assert()
+    //    .success()
+    //    .stdout(expected);
     let expected = fs::read_to_string(expected_file)?;
     let output = Command::cargo_bin(PRG)?
         .args(args)

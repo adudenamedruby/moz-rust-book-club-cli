@@ -1,5 +1,6 @@
+use crate::Extract::*;
 use anyhow::{anyhow, bail, Result};
-use clap::Parser;
+use clap::{Arg, ArgGroup, Command};
 use csv::{ReaderBuilder, StringRecord, WriterBuilder};
 use regex::Regex;
 use std::{
@@ -9,35 +10,17 @@ use std::{
     ops::Range,
 };
 
-#[derive(Debug, Parser)]
-#[command(author, version, about)]
-/// Rust version of `cut`
+#[derive(Debug)]
 struct Args {
-    /// Input file(s)
-    #[arg(default_value = "-")]
     files: Vec<String>,
-
-    /// Field delimiter
-    #[arg(short, long, value_name = "DELIMITER", default_value = "\t")]
     delimiter: String,
-
-    #[command(flatten)]
     extract: ArgsExtract,
 }
 
-#[derive(Debug, clap::Args)]
-#[group(required = true, multiple = false)]
+#[derive(Debug)]
 struct ArgsExtract {
-    /// Selected fields
-    #[arg(short, long, value_name = "FIELDS")]
     fields: Option<String>,
-
-    /// Selected bytes
-    #[arg(short, long, value_name = "BYTES")]
     bytes: Option<String>,
-
-    /// Selected chars
-    #[arg(short, long, value_name = "CHARS")]
     chars: Option<String>,
 }
 
@@ -52,9 +35,70 @@ enum Extract {
 
 // --------------------------------------------------
 fn main() {
-    if let Err(e) = run(Args::parse()) {
+    if let Err(e) = run(get_args()) {
         eprintln!("{e}");
         std::process::exit(1);
+    }
+}
+
+// --------------------------------------------------
+fn get_args() -> Args {
+    let matches = Command::new("cutr")
+        .version("0.1.0")
+        .author("Ken Youens-Clark <kyclark@gmail.com>")
+        .about("Rust version of `cut`")
+        .arg(
+            Arg::new("files")
+                .value_name("FILES")
+                .help("Input file(s)")
+                .num_args(0..)
+                .default_value("-"),
+        )
+        .arg(
+            Arg::new("delimiter")
+                .value_name("DELIMITER")
+                .short('d')
+                .long("delim")
+                .help("Field delimiter")
+                .default_value("\t"),
+        )
+        .arg(
+            Arg::new("fields")
+                .value_name("FIELDS")
+                .short('f')
+                .long("fields")
+                .help("Selected fields"),
+        )
+        .arg(
+            Arg::new("bytes")
+                .value_name("BYTES")
+                .short('b')
+                .long("bytes")
+                .help("Selected bytes"),
+        )
+        .arg(
+            Arg::new("chars")
+                .value_name("CHARS")
+                .short('c')
+                .long("chars")
+                .help("Selected characters"),
+        )
+        .group(
+            ArgGroup::new("extract")
+                .args(["fields", "bytes", "chars"])
+                .required(true)
+                .multiple(false),
+        )
+        .get_matches();
+
+    Args {
+        files: matches.get_many("files").unwrap().cloned().collect(),
+        delimiter: matches.get_one("delimiter").cloned().unwrap(),
+        extract: ArgsExtract {
+            fields: matches.get_one("fields").cloned(),
+            bytes: matches.get_one("bytes").cloned(),
+            chars: matches.get_one("chars").cloned(),
+        },
     }
 }
 
@@ -69,24 +113,24 @@ fn run(args: Args) -> Result<()> {
     let extract = if let Some(fields) =
         args.extract.fields.map(parse_pos).transpose()?
     {
-        Extract::Fields(fields)
+        Fields(fields)
     } else if let Some(bytes) =
         args.extract.bytes.map(parse_pos).transpose()?
     {
-        Extract::Bytes(bytes)
+        Bytes(bytes)
     } else if let Some(chars) =
         args.extract.chars.map(parse_pos).transpose()?
     {
-        Extract::Chars(chars)
+        Chars(chars)
     } else {
-        unreachable!("Must have --fields, --bytes, or --chars");
+        bail!("Must have --fields, --bytes, or --chars");
     };
 
     for filename in &args.files {
         match open(filename) {
             Err(err) => eprintln!("{filename}: {err}"),
             Ok(file) => match &extract {
-                Extract::Fields(field_pos) => {
+                Fields(field_pos) => {
                     let mut reader = ReaderBuilder::new()
                         .delimiter(delimiter)
                         .has_headers(false)
@@ -102,12 +146,12 @@ fn run(args: Args) -> Result<()> {
                         ))?;
                     }
                 }
-                Extract::Bytes(byte_pos) => {
+                Bytes(byte_pos) => {
                     for line in file.lines() {
                         println!("{}", extract_bytes(&line?, byte_pos));
                     }
                 }
-                Extract::Chars(char_pos) => {
+                Chars(char_pos) => {
                     for line in file.lines() {
                         println!("{}", extract_chars(&line?, char_pos));
                     }
@@ -210,7 +254,6 @@ fn extract_chars(line: &str, char_pos: &[Range<usize>]) -> String {
 mod unit_tests {
     use super::{extract_bytes, extract_chars, extract_fields, parse_pos};
     use csv::StringRecord;
-    use pretty_assertions::assert_eq;
 
     #[test]
     fn test_parse_pos() {

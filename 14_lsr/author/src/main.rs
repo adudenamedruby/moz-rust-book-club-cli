@@ -2,34 +2,60 @@ mod owner;
 
 use anyhow::Result;
 use chrono::{DateTime, Local};
-use clap::Parser;
+use clap::{Arg, ArgAction, Command};
 use owner::Owner;
 use std::{fs, os::unix::fs::MetadataExt, path::PathBuf};
 use tabular::{Row, Table};
 use users::{get_group_by_gid, get_user_by_uid};
 
-#[derive(Debug, Parser)]
-#[command(author, version, about)]
-/// Rust version of `ls`
+#[derive(Debug)]
 struct Args {
-    /// Files and/or directories
-    #[arg(default_value = ".")]
     paths: Vec<String>,
-
-    /// Long listing
-    #[arg(short, long)]
     long: bool,
-
-    /// Show all files
-    #[arg(short('a'), long("all"))]
     show_hidden: bool,
 }
 
 // --------------------------------------------------
 fn main() {
-    if let Err(e) = run(Args::parse()) {
+    if let Err(e) = run(get_args()) {
         eprintln!("{e}");
         std::process::exit(1);
+    }
+}
+
+// --------------------------------------------------
+fn get_args() -> Args {
+    let matches = Command::new("lsr")
+        .version("0.1.0")
+        .author("Ken Youens-Clark <kyclark@gmail.com>")
+        .about("Rust version of `ls`")
+        .arg(
+            Arg::new("paths")
+                .value_name("PATH")
+                .help("Files and/or directories")
+                .default_value(".")
+                .num_args(0..),
+        )
+        .arg(
+            Arg::new("long")
+                .action(ArgAction::SetTrue)
+                .help("Long listing")
+                .short('l')
+                .long("long"),
+        )
+        .arg(
+            Arg::new("all")
+                .action(ArgAction::SetTrue)
+                .help("Show all files")
+                .short('a')
+                .long("all"),
+        )
+        .get_matches();
+
+    Args {
+        paths: matches.get_many("paths").unwrap().cloned().collect(),
+        long: matches.get_flag("long"),
+        show_hidden: matches.get_flag("all"),
     }
 }
 
@@ -143,7 +169,6 @@ fn mk_triple(mode: u32, owner: Owner) -> String {
 #[cfg(test)]
 mod test {
     use super::{find_files, format_mode, format_output, mk_triple, Owner};
-    use pretty_assertions::assert_eq;
     use std::path::PathBuf;
 
     #[test]

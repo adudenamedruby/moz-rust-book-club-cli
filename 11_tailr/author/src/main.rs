@@ -1,6 +1,6 @@
 use crate::TakeValue::*;
 use anyhow::{anyhow, bail, Result};
-use clap::Parser;
+use clap::{Arg, ArgAction, Command};
 use once_cell::sync::OnceCell;
 use regex::Regex;
 use std::{
@@ -8,24 +8,11 @@ use std::{
     io::{BufRead, BufReader, Read, Seek, SeekFrom},
 };
 
-#[derive(Debug, Parser)]
-#[command(author, version, about)]
-/// Rust version of `tail`
+#[derive(Debug)]
 struct Args {
-    /// Input file(s)
-    #[arg(required = true)]
     files: Vec<String>,
-
-    /// Number of lines
-    #[arg(value_name = "LINES", short('n'), long, default_value = "10")]
     lines: String,
-
-    /// Number of bytes
-    #[arg(value_name = "BYTES", short('c'), long, conflicts_with("lines"))]
     bytes: Option<String>,
-
-    /// Suppress headers
-    #[arg(short, long)]
     quiet: bool,
 }
 
@@ -39,9 +26,55 @@ enum TakeValue {
 
 // --------------------------------------------------
 fn main() {
-    if let Err(e) = run(Args::parse()) {
+    if let Err(e) = run(get_args()) {
         eprintln!("{e}");
         std::process::exit(1);
+    }
+}
+
+// --------------------------------------------------
+fn get_args() -> Args {
+    let matches = Command::new("tailr")
+        .version("0.1.0")
+        .author("Ken Youens-Clark <kyclark@gmail.com>")
+        .about("Rust version of `tail`")
+        .arg(
+            Arg::new("files")
+                .value_name("FILE")
+                .help("Input file(s)")
+                .required(true)
+                .num_args(1..),
+        )
+        .arg(
+            Arg::new("lines")
+                .short('n')
+                .long("lines")
+                .value_name("LINES")
+                .help("Number of lines")
+                .default_value("10"),
+        )
+        .arg(
+            Arg::new("bytes")
+                .short('c')
+                .long("bytes")
+                .value_name("BYTES")
+                .conflicts_with("lines")
+                .help("Number of bytes"),
+        )
+        .arg(
+            Arg::new("quiet")
+                .short('q')
+                .long("quiet")
+                .action(ArgAction::SetTrue)
+                .help("Suppress headers"),
+        )
+        .get_matches();
+
+    Args {
+        files: matches.get_many("files").unwrap().cloned().collect(),
+        lines: matches.get_one("lines").cloned().unwrap(),
+        bytes: matches.get_one("bytes").cloned(),
+        quiet: matches.get_flag("quiet"),
     }
 }
 
@@ -90,14 +123,12 @@ fn parse_num(val: String) -> Result<TakeValue> {
     match num_re.captures(&val) {
         Some(caps) => {
             let sign = caps.get(1).map_or("-", |m| m.as_str());
-            let signed_num =
-                format!("{sign}{}", caps.get(2).unwrap().as_str());
-
-            if let Ok(num) = signed_num.parse() {
-                if sign == "+" && num == 0 {
+            let num = format!("{sign}{}", caps.get(2).unwrap().as_str());
+            if let Ok(val) = num.parse() {
+                if sign == "+" && val == 0 {
                     Ok(PlusZero)
                 } else {
-                    Ok(TakeNum(num))
+                    Ok(TakeNum(val))
                 }
             } else {
                 bail!(val)
@@ -115,7 +146,7 @@ fn parse_num(val: String) -> Result<TakeValue> {
 // One day in the future we will be able to say
 // val.starts_with(['+', '-'].as_slice())
 // but array_methods are currently an unstable nightly feature.
-//fn parse_num(val: String) -> Result<TakeValue> {
+//fn parse_num(val: &str) -> Result<TakeValue> {
 //    let signs: &[char] = &['+', '-'];
 //    let res = val
 //        .starts_with(signs)
@@ -130,7 +161,7 @@ fn parse_num(val: String) -> Result<TakeValue> {
 //                Ok(TakeNum(num))
 //            }
 //        }
-//        _ => bail!(val),
+//        _ => Err(From::from(val)),
 //    }
 //}
 

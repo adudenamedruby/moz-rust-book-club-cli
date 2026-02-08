@@ -1,44 +1,11 @@
 use crate::Column::*;
 use anyhow::{anyhow, bail, Result};
-use clap::{ArgAction, Parser};
+use clap::{Arg, ArgAction, Command};
 use std::{
     cmp::Ordering::*,
     fs::File,
     io::{self, BufRead, BufReader},
 };
-
-#[derive(Debug, Parser)]
-#[command(author, version, about)]
-/// Rust version of `comm`
-struct Args {
-    /// Input file 1
-    #[arg()]
-    file1: String,
-
-    /// Input file 2
-    #[arg()]
-    file2: String,
-
-    /// Suppress printing of column 1
-    #[arg(short('1'), action(ArgAction::SetFalse))]
-    show_col1: bool,
-
-    /// Suppress printing of column 2
-    #[arg(short('2'), action(ArgAction::SetFalse))]
-    show_col2: bool,
-
-    /// Suppress printing of column 3
-    #[arg(short('3'), action(ArgAction::SetFalse))]
-    show_col3: bool,
-
-    /// Case-insensitive comparison of lines
-    #[arg(short)]
-    insensitive: bool,
-
-    /// Output delimiter
-    #[arg(short, long("output-delimiter"), default_value = "\t")]
-    delimiter: String,
-}
 
 enum Column<'a> {
     Col1(&'a str),
@@ -46,11 +13,85 @@ enum Column<'a> {
     Col3(&'a str),
 }
 
+#[derive(Debug)]
+struct Args {
+    file1: String,
+    file2: String,
+    show_col1: bool,
+    show_col2: bool,
+    show_col3: bool,
+    insensitive: bool,
+    delimiter: String,
+}
+
 // --------------------------------------------------
 fn main() {
-    if let Err(e) = run(Args::parse()) {
+    if let Err(e) = run(get_args()) {
         eprintln!("{e}");
         std::process::exit(1);
+    }
+}
+
+// --------------------------------------------------
+fn get_args() -> Args {
+    let matches = Command::new("commr")
+        .version("0.1.0")
+        .author("Ken Youens-Clark <kyclark@gmail.com>")
+        .about("Rust version of `comm`")
+        .arg(
+            Arg::new("file1")
+                .value_name("FILE1")
+                .help("Input file 1")
+                .required(true),
+        )
+        .arg(
+            Arg::new("file2")
+                .value_name("FILE2")
+                .help("Input file 2")
+                .required(true),
+        )
+        .arg(
+            Arg::new("suppress_col1")
+                .short('1')
+                .action(ArgAction::SetTrue)
+                .help("Suppress printing of column 1"),
+        )
+        .arg(
+            Arg::new("suppress_col2")
+                .short('2')
+                .action(ArgAction::SetTrue)
+                .help("Suppress printing of column 2"),
+        )
+        .arg(
+            Arg::new("suppress_col3")
+                .short('3')
+                .action(ArgAction::SetTrue)
+                .help("Suppress printing of column 3"),
+        )
+        .arg(
+            Arg::new("insensitive")
+                .short('i')
+                .action(ArgAction::SetTrue)
+                .help("Case-insensitive comparison of lines"),
+        )
+        .arg(
+            Arg::new("delimiter")
+                .short('d')
+                .long("output-delimiter")
+                .value_name("DELIM")
+                .help("Output delimiter")
+                .default_value("\t"),
+        )
+        .get_matches();
+
+    Args {
+        file1: matches.get_one("file1").cloned().unwrap(),
+        file2: matches.get_one("file2").cloned().unwrap(),
+        show_col1: !matches.get_flag("suppress_col1"),
+        show_col2: !matches.get_flag("suppress_col2"),
+        show_col3: !matches.get_flag("suppress_col3"),
+        insensitive: matches.get_flag("insensitive"),
+        delimiter: matches.get_one("delimiter").cloned().unwrap(),
     }
 }
 
