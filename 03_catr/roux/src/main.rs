@@ -38,10 +38,18 @@ fn get_args() -> Args {
         .map(|vals| vals.cloned().collect())
         .unwrap_or_else(|| vec!["-".to_string()]);
 
+    let number_lines = matches.get_flag("number_lines");
+    let number_nonblank_lines = matches.get_flag("number_nonblank_lines");
+
+    if (number_lines == number_nonblank_lines) && number_lines {
+        eprintln!("error: the argument '--number-nonblank' cannot be used with '--number'");
+        std::process::exit(1)
+    }
+
     Args {
         files,
-        number_lines: matches.get_flag("number_lines"),
-        number_nonblank_lines: matches.get_flag("number_nonblank_lines"),
+        number_lines,
+        number_nonblank_lines,
     }
 }
 
