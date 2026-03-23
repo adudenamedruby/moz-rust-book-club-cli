@@ -14,7 +14,7 @@ struct Args {
 fn get_args() -> Args {
     let matches = Command::new("catr")
         .version("0.1.0")
-        .author("adudenamedruby")
+        .author("bastian")
         .about("Rust version of cat")
         .arg(
             Arg::new("files")
