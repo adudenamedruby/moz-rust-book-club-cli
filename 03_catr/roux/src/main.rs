@@ -15,15 +15,17 @@ fn get_args() -> Args {
         .arg(
             Arg::new("files")
                 .value_name("FILE")
-                .help("Input file(s) [default: -]")
-                // .required(true)
-                .num_args(1..),
+                .help("Input file(s)")
+                .num_args(1..)
+                // this is the proper way to provide a default value!!
+                .default_value("-"),
         )
         .arg(
             Arg::new("number_lines")
                 .short('n')
                 .help("Number lines")
-                .action(ArgAction::SetTrue),
+                .action(ArgAction::SetTrue)
+                .conflicts_with("number_nonblank_lines"),
         )
         .arg(
             Arg::new("number_nonblank_lines")
@@ -33,23 +35,22 @@ fn get_args() -> Args {
         )
         .get_matches();
 
-    let files = matches
-        .get_many("files")
-        .map(|vals| vals.cloned().collect())
-        .unwrap_or_else(|| vec!["-".to_string()]);
+    // Roux - This is how I originally provided a default for files
+    // let files = matches
+    //     .get_many("files")
+    //     .map(|vals| vals.cloned().collect())
+    //     .unwrap_or_else(|| vec!["-".to_string()]);
 
-    let number_lines = matches.get_flag("number_lines");
-    let number_nonblank_lines = matches.get_flag("number_nonblank_lines");
-
-    if (number_lines == number_nonblank_lines) && number_lines {
-        eprintln!("error: the argument '--number-nonblank' cannot be used with '--number'");
-        std::process::exit(1)
-    }
+    // Roux - this is how I originally made sure these two arguments don't conflict
+    // if (number_lines == number_nonblank_lines) && number_lines {
+    //     eprintln!("error: the argument '--number-nonblank' cannot be used with '--number'");
+    //     std::process::exit(1)
+    // }
 
     Args {
-        files,
-        number_lines,
-        number_nonblank_lines,
+        files: matches.get_many("files").unwrap().cloned().collect(),
+        number_lines: matches.get_flag("number_lines"),
+        number_nonblank_lines: matches.get_flag("number_nonblank_lines"),
     }
 }
 
