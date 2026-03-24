@@ -1,4 +1,7 @@
+use anyhow::Result;
 use clap::{Arg, ArgAction, Command};
+use std::fs::File;
+use std::io::{self, BufRead, BufReader};
 
 #[derive(Debug)]
 struct Args {
@@ -6,6 +9,30 @@ struct Args {
     number_lines: bool,
     number_nonblank_lines: bool,
 }
+
+/* derive version of this code
+use clap::Parser;
+
+#[derive(Debug, Parser)]
+#[command(author, version, about)]
+struct Args {
+    #[arg(value_name = "FILE", default_value = "-")]
+    files: Vec<String>,
+
+    #[arg(
+        short('n'),
+        long("number"),
+        conflicts_with("number_nonblank_lines")
+        )]
+    number_lines: bool,
+
+    #[arg(
+        short('b'),
+        long("number-nonblank")
+        )]
+    number_nonblank_lines: bool,
+}
+*/
 
 fn get_args() -> Args {
     let matches = Command::new("catr")
@@ -23,6 +50,7 @@ fn get_args() -> Args {
         .arg(
             Arg::new("number_lines")
                 .short('n')
+                .long("number")
                 .help("Number lines")
                 .action(ArgAction::SetTrue)
                 .conflicts_with("number_nonblank_lines"),
@@ -30,6 +58,7 @@ fn get_args() -> Args {
         .arg(
             Arg::new("number_nonblank_lines")
                 .short('b')
+                .long("number-nonblank")
                 .help("Number non-blank lines")
                 .action(ArgAction::SetTrue),
         )
@@ -54,7 +83,33 @@ fn get_args() -> Args {
     }
 }
 
+fn run(args: Args) -> Result<()> {
+    for filename in args.files {
+        match open(&filename) {
+            Err(err) => eprintln!("Failed to open {filename}: {err}"),
+            Ok(_) => println!("Opened {filename}"),
+        }
+    }
+    Ok(())
+}
+
+fn open(filename: &str) -> Result<Box<dyn BufRead>> {
+    match filename {
+        "-" => Ok(Box::new(BufReader::new(io::stdin()))),
+        _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
+    }
+}
+
 fn main() {
-    let args = get_args();
-    println!("{args:#?}");
+    // Derive version
+    // let args = Argss::parse();
+
+    // let args = get_args();
+    // println!("{args:#?}");
+
+    if let Err(e) = run(get_args()) {
+        // alternatively run(Args::parse())
+        eprintln!("{e}");
+        std::process::exit(1);
+    }
 }
