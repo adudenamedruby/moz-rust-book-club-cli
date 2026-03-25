@@ -87,11 +87,32 @@ fn run(args: Args) -> Result<()> {
     for filename in args.files {
         match open(&filename) {
             Err(err) => eprintln!("Failed to open {filename}: {err}"),
-            Ok(reader) => {
-                for line in reader.lines() {
-                    println!("{}", line?)
-                }
+            Ok(reader) => print_file_lines(reader, args.number_lines, args.number_nonblank_lines)?,
+        }
+    }
+    Ok(())
+}
+
+fn print_file_lines(
+    reader: Box<dyn BufRead>,
+    number_lines: bool,
+    number_nonblank: bool,
+) -> Result<()> {
+    let mut previous_num = 0;
+    for (line_num, line) in reader.lines().enumerate() {
+        let line = line?;
+
+        if number_lines {
+            println!("{:>6}\t{line}", line_num + 1);
+        } else if number_nonblank {
+            if line.is_empty() {
+                println!();
+            } else {
+                previous_num += 1;
+                println!("{previous_num:>6}\t{line}");
             }
+        } else {
+            println!("{line}");
         }
     }
     Ok(())
