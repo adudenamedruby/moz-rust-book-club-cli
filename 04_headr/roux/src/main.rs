@@ -1,3 +1,9 @@
+use std::{
+    fs::File,
+    io::{self, BufRead, BufReader},
+};
+
+use anyhow::Result;
 use clap::{Arg, Command};
 
 #[derive(Debug)]
@@ -34,6 +40,7 @@ fn get_args() -> Args {
                 .help("Number of bytes")
                 .short('c')
                 .long("bytes")
+                .conflicts_with("lines")
                 .value_parser(clap::value_parser!(u64).range(1..)),
         )
         .get_matches();
@@ -45,11 +52,27 @@ fn get_args() -> Args {
     }
 }
 
-fn run(args: Args) {
+fn open(filename: &str) -> Result<Box<dyn BufRead>> {
+    match filename {
+        "-" => Ok(Box::new(BufReader::new(io::stdin()))),
+        _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
+    }
+}
+
+fn run(args: Args) -> Result<()> {
     print!("{args:#?}");
+    for filename in args.files {
+        match open(&filename) {
+            Err(err) => eprintln!("{filename}: {err}"),
+            Ok(_) => println!("Opened {filename}"),
+        }
+    }
+    Ok(())
 }
 
 fn main() {
-    let args = get_args();
-    run(args);
+    if let Err(e) = run(get_args()) {
+        eprint!("{e}");
+        std::process::exit(1);
+    }
 }
