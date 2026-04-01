@@ -59,12 +59,21 @@ fn open(filename: &str) -> Result<Box<dyn BufRead>> {
     }
 }
 
+fn read_lines_from(filehandle: Box<dyn BufRead>) -> Result<()> {
+    for line in filehandle.lines() {
+        println!("{}", line?);
+    }
+    Ok(())
+}
+
 fn run(args: Args) -> Result<()> {
-    print!("{args:#?}");
     for filename in args.files {
         match open(&filename) {
             Err(err) => eprintln!("{filename}: {err}"),
-            Ok(_) => println!("Opened {filename}"),
+            Ok(filehandle) => {
+                println!("==> {filename} <==");
+                read_lines_from(filehandle)?;
+            }
         }
     }
     Ok(())
