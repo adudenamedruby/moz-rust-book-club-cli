@@ -161,225 +161,226 @@ fn empty_c4() -> Result<()> {
 }
 
 // // --------------------------------------------------
-// #[test]
-// fn one() -> Result<()> {
-//     run(&[ONE], "tests/expected/one.txt.out")
-// }
-//
-// #[test]
-// fn one_n2() -> Result<()> {
-//     run(&[ONE, "-n", "2"], "tests/expected/one.txt.n2.out")
-// }
-//
-// #[test]
-// fn one_n4() -> Result<()> {
-//     run(&[ONE, "-n", "4"], "tests/expected/one.txt.n4.out")
-// }
-//
-// #[test]
-// fn one_c1() -> Result<()> {
-//     run(&[ONE, "-c", "1"], "tests/expected/one.txt.c1.out")
-// }
-//
-// #[test]
-// fn one_c2() -> Result<()> {
-//     run(&[ONE, "-c", "2"], "tests/expected/one.txt.c2.out")
-// }
-//
-// #[test]
-// fn one_c4() -> Result<()> {
-//     run(&[ONE, "-c", "4"], "tests/expected/one.txt.c4.out")
-// }
-//
+#[test]
+fn one() -> Result<()> {
+    run(&[ONE], "tests/expected/one.txt.out")
+}
+
+#[test]
+fn one_n2() -> Result<()> {
+    run(&[ONE, "-n", "2"], "tests/expected/one.txt.n2.out")
+}
+
+#[test]
+fn one_n4() -> Result<()> {
+    run(&[ONE, "-n", "4"], "tests/expected/one.txt.n4.out")
+}
+
+//roux
+#[test]
+fn one_c1() -> Result<()> {
+    run(&[ONE, "-c", "1"], "tests/expected/one.txt.c1.out")
+}
+
+#[test]
+fn one_c2() -> Result<()> {
+    run(&[ONE, "-c", "2"], "tests/expected/one.txt.c2.out")
+}
+
+#[test]
+fn one_c4() -> Result<()> {
+    run(&[ONE, "-c", "4"], "tests/expected/one.txt.c4.out")
+}
+
 // #[test]
 // fn one_stdin() -> Result<()> {
 //     run_stdin(&[], ONE, "tests/expected/one.txt.out")
 // }
-//
+
 // #[test]
 // fn one_n2_stdin() -> Result<()> {
 //     run_stdin(&["-n", "2"], ONE, "tests/expected/one.txt.n2.out")
 // }
-//
+
 // #[test]
 // fn one_n4_stdin() -> Result<()> {
 //     run_stdin(&["-n", "4"], ONE, "tests/expected/one.txt.n4.out")
 // }
-//
+
 // #[test]
 // fn one_c1_stdin() -> Result<()> {
 //     run_stdin(&["-c", "1"], ONE, "tests/expected/one.txt.c1.out")
 // }
-//
+
 // #[test]
 // fn one_c2_stdin() -> Result<()> {
 //     run_stdin(&["-c", "2"], ONE, "tests/expected/one.txt.c2.out")
 // }
-//
+
 // #[test]
 // fn one_c4_stdin() -> Result<()> {
 //     run_stdin(&["-c", "4"], ONE, "tests/expected/one.txt.c4.out")
 // }
-//
+
 // // --------------------------------------------------
-// #[test]
-// fn two() -> Result<()> {
-//     run(&[TWO], "tests/expected/two.txt.out")
-// }
-//
-// #[test]
-// fn two_n2() -> Result<()> {
-//     run(&[TWO, "-n", "2"], "tests/expected/two.txt.n2.out")
-// }
-//
-// #[test]
-// fn two_n4() -> Result<()> {
-//     run(&[TWO, "-n", "4"], "tests/expected/two.txt.n4.out")
-// }
-//
-// #[test]
-// fn two_c2() -> Result<()> {
-//     run(&[TWO, "-c", "2"], "tests/expected/two.txt.c2.out")
-// }
-//
-// #[test]
-// fn two_c4() -> Result<()> {
-//     run(&[TWO, "-c", "4"], "tests/expected/two.txt.c4.out")
-// }
-//
+#[test]
+fn two() -> Result<()> {
+    run(&[TWO], "tests/expected/two.txt.out")
+}
+
+#[test]
+fn two_n2() -> Result<()> {
+    run(&[TWO, "-n", "2"], "tests/expected/two.txt.n2.out")
+}
+
+#[test]
+fn two_n4() -> Result<()> {
+    run(&[TWO, "-n", "4"], "tests/expected/two.txt.n4.out")
+}
+
+#[test]
+fn two_c2() -> Result<()> {
+    run(&[TWO, "-c", "2"], "tests/expected/two.txt.c2.out")
+}
+
+#[test]
+fn two_c4() -> Result<()> {
+    run(&[TWO, "-c", "4"], "tests/expected/two.txt.c4.out")
+}
+
 // #[test]
 // fn two_stdin() -> Result<()> {
 //     run_stdin(&[], TWO, "tests/expected/two.txt.out")
 // }
-//
+
 // #[test]
 // fn two_n2_stdin() -> Result<()> {
 //     run_stdin(&["-n", "2"], TWO, "tests/expected/two.txt.n2.out")
 // }
-//
+
 // #[test]
 // fn two_n4_stdin() -> Result<()> {
 //     run_stdin(&["-n", "4"], TWO, "tests/expected/two.txt.n4.out")
 // }
-//
+
 // #[test]
 // fn two_c2_stdin() -> Result<()> {
 //     run_stdin(&["-c", "2"], TWO, "tests/expected/two.txt.c2.out")
 // }
-//
+
 // #[test]
 // fn two_c4_stdin() -> Result<()> {
 //     run_stdin(&["-c", "4"], TWO, "tests/expected/two.txt.c4.out")
 // }
-//
+
 // // --------------------------------------------------
-// #[test]
-// fn three() -> Result<()> {
-//     run(&[THREE], "tests/expected/three.txt.out")
-// }
-//
-// #[test]
-// fn three_n2() -> Result<()> {
-//     run(&[THREE, "-n", "2"], "tests/expected/three.txt.n2.out")
-// }
-//
-// #[test]
-// fn three_n4() -> Result<()> {
-//     run(&[THREE, "-n", "4"], "tests/expected/three.txt.n4.out")
-// }
-//
-// #[test]
-// fn three_c2() -> Result<()> {
-//     run(&[THREE, "-c", "2"], "tests/expected/three.txt.c2.out")
-// }
-//
-// #[test]
-// fn three_c4() -> Result<()> {
-//     run(&[THREE, "-c", "4"], "tests/expected/three.txt.c4.out")
-// }
-//
+#[test]
+fn three() -> Result<()> {
+    run(&[THREE], "tests/expected/three.txt.out")
+}
+
+#[test]
+fn three_n2() -> Result<()> {
+    run(&[THREE, "-n", "2"], "tests/expected/three.txt.n2.out")
+}
+
+#[test]
+fn three_n4() -> Result<()> {
+    run(&[THREE, "-n", "4"], "tests/expected/three.txt.n4.out")
+}
+
+#[test]
+fn three_c2() -> Result<()> {
+    run(&[THREE, "-c", "2"], "tests/expected/three.txt.c2.out")
+}
+
+#[test]
+fn three_c4() -> Result<()> {
+    run(&[THREE, "-c", "4"], "tests/expected/three.txt.c4.out")
+}
+
 // #[test]
 // fn three_stdin() -> Result<()> {
 //     run_stdin(&[], THREE, "tests/expected/three.txt.out")
 // }
-//
+
 // #[test]
 // fn three_n2_stdin() -> Result<()> {
 //     run_stdin(&["-n", "2"], THREE, "tests/expected/three.txt.n2.out")
 // }
-//
+
 // #[test]
 // fn three_n4_stdin() -> Result<()> {
 //     run_stdin(&["-n", "4"], THREE, "tests/expected/three.txt.n4.out")
 // }
-//
+
 // #[test]
 // fn three_c2_stdin() -> Result<()> {
 //     run_stdin(&["-c", "2"], THREE, "tests/expected/three.txt.c2.out")
 // }
-//
+
 // #[test]
 // fn three_c4_stdin() -> Result<()> {
 //     run_stdin(&["-c", "4"], THREE, "tests/expected/three.txt.c4.out")
 // }
-//
-// // --------------------------------------------------
-// #[test]
-// fn twelve() -> Result<()> {
-//     run(&[TWELVE], "tests/expected/twelve.txt.out")
-// }
-//
-// #[test]
-// fn twelve_n2() -> Result<()> {
-//     run(&[TWELVE, "-n", "2"], "tests/expected/twelve.txt.n2.out")
-// }
-//
-// #[test]
-// fn twelve_n4() -> Result<()> {
-//     run(&[TWELVE, "-n", "4"], "tests/expected/twelve.txt.n4.out")
-// }
-//
-// #[test]
-// fn twelve_c2() -> Result<()> {
-//     run(&[TWELVE, "-c", "2"], "tests/expected/twelve.txt.c2.out")
-// }
-//
-// #[test]
-// fn twelve_c4() -> Result<()> {
-//     run(&[TWELVE, "-c", "4"], "tests/expected/twelve.txt.c4.out")
-// }
-//
+
+// --------------------------------------------------
+#[test]
+fn twelve() -> Result<()> {
+    run(&[TWELVE], "tests/expected/twelve.txt.out")
+}
+
+#[test]
+fn twelve_n2() -> Result<()> {
+    run(&[TWELVE, "-n", "2"], "tests/expected/twelve.txt.n2.out")
+}
+
+#[test]
+fn twelve_n4() -> Result<()> {
+    run(&[TWELVE, "-n", "4"], "tests/expected/twelve.txt.n4.out")
+}
+
+#[test]
+fn twelve_c2() -> Result<()> {
+    run(&[TWELVE, "-c", "2"], "tests/expected/twelve.txt.c2.out")
+}
+
+#[test]
+fn twelve_c4() -> Result<()> {
+    run(&[TWELVE, "-c", "4"], "tests/expected/twelve.txt.c4.out")
+}
+
 // #[test]
 // fn twelve_stdin() -> Result<()> {
 //     run_stdin(&[], TWELVE, "tests/expected/twelve.txt.out")
 // }
-//
+
 // #[test]
 // fn twelve_n2_stdin() -> Result<()> {
 //     run_stdin(&["-n", "2"], TWELVE, "tests/expected/twelve.txt.n2.out")
 // }
-//
+
 // #[test]
 // fn twelve_n4_stdin() -> Result<()> {
 //     run_stdin(&["-n", "4"], TWELVE, "tests/expected/twelve.txt.n4.out")
 // }
-//
+
 // #[test]
 // fn twelve_c2_stdin() -> Result<()> {
 //     run_stdin(&["-c", "2"], TWELVE, "tests/expected/twelve.txt.c2.out")
 // }
-//
+
 // #[test]
 // fn twelve_c4_stdin() -> Result<()> {
 //     run_stdin(&["-c", "4"], TWELVE, "tests/expected/twelve.txt.c4.out")
 // }
-//
-// // --------------------------------------------------
-// #[test]
-// fn multiple_files() -> Result<()> {
-//     run(&[EMPTY, ONE, TWO, THREE, TWELVE], "tests/expected/all.out")
-// }
-//
+
+// --------------------------------------------------
+#[test]
+fn multiple_files() -> Result<()> {
+    run(&[EMPTY, ONE, TWO, THREE, TWELVE], "tests/expected/all.out")
+}
+
 // #[test]
 // fn multiple_files_n2() -> Result<()> {
 //     run(
@@ -387,7 +388,7 @@ fn empty_c4() -> Result<()> {
 //         "tests/expected/all.n2.out",
 //     )
 // }
-//
+
 // #[test]
 // fn multiple_files_n4() -> Result<()> {
 //     run(
@@ -395,7 +396,7 @@ fn empty_c4() -> Result<()> {
 //         "tests/expected/all.n4.out",
 //     )
 // }
-//
+
 // #[test]
 // fn multiple_files_c1() -> Result<()> {
 //     run(
@@ -403,7 +404,7 @@ fn empty_c4() -> Result<()> {
 //         "tests/expected/all.c1.out",
 //     )
 // }
-//
+
 // #[test]
 // fn multiple_files_c2() -> Result<()> {
 //     run(
@@ -411,7 +412,7 @@ fn empty_c4() -> Result<()> {
 //         "tests/expected/all.c2.out",
 //     )
 // }
-//
+
 // #[test]
 // fn multiple_files_c4() -> Result<()> {
 //     run(

@@ -36,14 +36,16 @@ fn open(filename: &str) -> Result<Box<dyn BufRead>> {
 }
 
 fn run(args: Args) -> Result<()> {
-    for filename in args.files {
-        match open(&filename) {
+    for filename in &args.files {
+        match open(filename) {
             Err(e) => eprintln!("{filename}: {e}\n"),
-            Ok(mut file) => match metadata(&filename) {
+            Ok(mut file) => match metadata(filename) {
                 Err(e) => eprintln!("{filename}: {e}"),
                 Ok(metadata) => {
                     if metadata.len() != 0 {
-                        println!("{}", String::from("==> {filename} <=="));
+                        if args.files.len() > 1 {
+                            print!("==> {filename} <==");
+                        }
 
                         if let Some(byte_num) = args.bytes {
                             let mut buf = vec![0; byte_num as usize];
@@ -51,13 +53,11 @@ fn run(args: Args) -> Result<()> {
                             let byte_str = String::from_utf8_lossy(&buf);
                             print!("{}", byte_str);
                         } else {
-                            for line in file.lines().take(args.lines as usize) {
-                                match line {
-                                    Err(e) => eprintln!("no line present: {e}"),
-                                    Ok(line) => {
-                                        print!("{line}");
-                                    }
-                                }
+                            let mut buf = String::new();
+                            for _ in 0..args.lines {
+                                buf.clear();
+                                file.read_line(&mut buf)?;
+                                print!("{buf}");
                             }
                         }
                     }
