@@ -42,9 +42,13 @@ fn run(args: Args) -> Result<()> {
             Ok(mut file) => match metadata(filename) {
                 Err(e) => eprintln!("{filename}: {e}"),
                 Ok(metadata) => {
+                    if metadata.len() == 0 && args.files.len() > 1 {
+                        println!("==> {filename} <==");
+                    }
+
                     if metadata.len() != 0 {
                         if args.files.len() > 1 {
-                            print!("==> {filename} <==");
+                            println!("\n==> {filename} <==");
                         }
 
                         if let Some(byte_num) = args.bytes {

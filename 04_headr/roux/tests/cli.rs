@@ -381,42 +381,42 @@ fn multiple_files() -> Result<()> {
     run(&[EMPTY, ONE, TWO, THREE, TWELVE], "tests/expected/all.out")
 }
 
-// #[test]
-// fn multiple_files_n2() -> Result<()> {
-//     run(
-//         &[EMPTY, ONE, TWO, THREE, TWELVE, "-n", "2"],
-//         "tests/expected/all.n2.out",
-//     )
-// }
+#[test]
+fn multiple_files_n2() -> Result<()> {
+    run(
+        &[EMPTY, ONE, TWO, THREE, TWELVE, "-n", "2"],
+        "tests/expected/all.n2.out",
+    )
+}
 
-// #[test]
-// fn multiple_files_n4() -> Result<()> {
-//     run(
-//         &["-n", "4", EMPTY, ONE, TWO, THREE, TWELVE],
-//         "tests/expected/all.n4.out",
-//     )
-// }
+#[test]
+fn multiple_files_n4() -> Result<()> {
+    run(
+        &["-n", "4", EMPTY, ONE, TWO, THREE, TWELVE],
+        "tests/expected/all.n4.out",
+    )
+}
 
-// #[test]
-// fn multiple_files_c1() -> Result<()> {
-//     run(
-//         &[EMPTY, ONE, TWO, THREE, TWELVE, "-c", "1"],
-//         "tests/expected/all.c1.out",
-//     )
-// }
+#[test]
+fn multiple_files_c1() -> Result<()> {
+    run(
+        &[EMPTY, ONE, TWO, THREE, TWELVE, "-c", "1"],
+        "tests/expected/all.c1.out",
+    )
+}
 
-// #[test]
-// fn multiple_files_c2() -> Result<()> {
-//     run(
-//         &[EMPTY, ONE, TWO, THREE, TWELVE, "-c", "2"],
-//         "tests/expected/all.c2.out",
-//     )
-// }
+#[test]
+fn multiple_files_c2() -> Result<()> {
+    run(
+        &[EMPTY, ONE, TWO, THREE, TWELVE, "-c", "2"],
+        "tests/expected/all.c2.out",
+    )
+}
 
-// #[test]
-// fn multiple_files_c4() -> Result<()> {
-//     run(
-//         &["-c", "4", EMPTY, ONE, TWO, THREE, TWELVE],
-//         "tests/expected/all.c4.out",
-//     )
-// }
+#[test]
+fn multiple_files_c4() -> Result<()> {
+    run(
+        &["-c", "4", EMPTY, ONE, TWO, THREE, TWELVE],
+        "tests/expected/all.c4.out",
+    )
+}
