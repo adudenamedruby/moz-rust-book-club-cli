@@ -7,7 +7,7 @@ use anyhow::Result;
 use clap::Parser;
 
 #[derive(Debug, Parser)]
-#[command(version, author, about, long_about=None)]
+#[command(version, author="adudenamedruby", about, long_about=None)]
 struct Args {
     /// Input file(s)
     #[arg(value_name = "FILE", default_value = "-")]
@@ -39,36 +39,46 @@ fn run(args: Args) -> Result<()> {
     for filename in &args.files {
         match open(filename) {
             Err(e) => eprintln!("{filename}: {e}\n"),
-            Ok(mut file) => match metadata(filename) {
-                Err(e) => eprintln!("{filename}: {e}"),
+            Ok(file) => match metadata(filename) {
+                Err(_) => process_file(&args, filename, file)?,
                 Ok(metadata) => {
                     if metadata.len() == 0 && args.files.len() > 1 {
                         println!("==> {filename} <==");
                     }
 
                     if metadata.len() != 0 {
-                        if args.files.len() > 1 {
-                            println!("\n==> {filename} <==");
-                        }
-
-                        if let Some(byte_num) = args.bytes {
-                            let mut buf = vec![0; byte_num as usize];
-                            file.read_exact(&mut buf)?;
-                            let byte_str = String::from_utf8_lossy(&buf);
-                            print!("{}", byte_str);
-                        } else {
-                            let mut buf = String::new();
-                            for _ in 0..args.lines {
-                                buf.clear();
-                                file.read_line(&mut buf)?;
-                                print!("{buf}");
-                            }
-                        }
+                        process_file(&args, filename, file)?;
                     }
                 }
             },
         }
     }
+    Ok(())
+}
+
+fn process_file(
+    args: &Args,
+    filename: &String,
+    mut file: Box<dyn BufRead + 'static>,
+) -> Result<(), anyhow::Error> {
+    if args.files.len() > 1 {
+        println!("\n==> {filename} <==");
+    }
+
+    if let Some(byte_num) = args.bytes {
+        let mut buf = vec![0; byte_num as usize];
+        file.read_exact(&mut buf)?;
+        let byte_str = String::from_utf8_lossy(&buf);
+        print!("{}", byte_str);
+    } else {
+        let mut buf = String::new();
+        for _ in 0..args.lines {
+            buf.clear();
+            file.read_line(&mut buf)?;
+            print!("{buf}");
+        }
+    };
+
     Ok(())
 }
 
