@@ -58,11 +58,7 @@ fn open(filename: &str) -> Result<Box<dyn BufRead>> {
 }
 
 fn count(mut file: impl BufRead) -> Result<Counts> {
-    let mut num_lines = 0;
-    let mut num_bytes = 0;
-    let mut num_chars = 0;
-    let mut num_words = 0;
-
+    let mut counts = Counts::default();
     let mut buffer = String::new();
 
     loop {
@@ -71,20 +67,15 @@ fn count(mut file: impl BufRead) -> Result<Counts> {
             Err(e) => bail!(e),
             Ok(0) => break,
             Ok(result) => {
-                num_lines += 1;
-                num_bytes += result;
-                num_chars += buffer.chars().count();
-                num_words += buffer.split_whitespace().count();
+                counts.num_lines += 1;
+                counts.num_bytes += result;
+                counts.num_chars += buffer.chars().count();
+                counts.num_words += buffer.split_whitespace().count();
             }
         }
     }
 
-    Ok(Counts {
-        num_lines,
-        num_bytes,
-        num_chars,
-        num_words,
-    })
+    Ok(counts)
 }
 
 fn run(mut args: Args) -> Result<()> {
@@ -104,30 +95,42 @@ fn run(mut args: Args) -> Result<()> {
             Err(e) => eprintln!("{filename}: {e}"),
             Ok(file) => {
                 let info = count(file)?;
-                show_me_the_mony(args.chars, &info, filename);
+                show_me_the_mony(&args, &info, filename);
                 toto += info;
             }
         }
     }
 
     if args.files.len() > 1 {
-        show_me_the_mony(args.chars, &toto, "total");
+        show_me_the_mony(&args, &toto, "total");
     }
 
     Ok(())
 }
 
-fn show_me_the_mony(should_show_chars: bool, file_info: &Counts, filename: &str) {
-    println!(
-        "{:8} {:8} {:8} {}",
-        file_info.num_lines,
-        file_info.num_words,
-        if should_show_chars {
-            file_info.num_chars
+fn show_me_the_mony(args: &Args, file_info: &Counts, filename: &str) {
+    let format_from_arg = |arg: bool, count: usize| -> String {
+        if arg {
+            format!("{:8}", count)
         } else {
-            file_info.num_bytes
+            "".to_string()
+        }
+    };
+
+    println!(
+        "{}{}{}{}",
+        format_from_arg(args.lines, file_info.num_lines),
+        format_from_arg(args.words, file_info.num_words),
+        if args.chars {
+            format_from_arg(args.chars, file_info.num_chars)
+        } else {
+            format_from_arg(args.bytes, file_info.num_bytes)
         },
-        if filename != "-" { filename } else { "" }
+        if filename != "-" {
+            format!(" {filename}")
+        } else {
+            "".to_string()
+        }
     );
 }
 
