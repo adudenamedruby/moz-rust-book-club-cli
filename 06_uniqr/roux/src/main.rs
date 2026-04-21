@@ -52,7 +52,7 @@ fn count(args: &Args) -> Result<String> {
     loop {
         let bytes = file.read_line(&mut line)?;
 
-        if line == char_tracker {
+        if line.trim_end() == char_tracker.trim_end() {
             count += 1;
         } else if char_tracker.is_empty() {
             char_tracker = line.clone();
