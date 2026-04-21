@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{self, BufRead, BufReader},
+    io::{self, BufRead, BufReader, Write},
 };
 
 use anyhow::{Result, anyhow};
@@ -31,20 +31,55 @@ fn open(filename: &str) -> Result<Box<dyn BufRead>> {
 }
 
 fn run(args: Args) -> Result<()> {
-    let mut file = open(&args.in_file).map_err(|e| anyhow!("{}: {e}", args.in_file))?;
-    let mut line = String::new();
-
-    loop {
-        let bytes = file.read_line(&mut line)?;
-        if bytes == 0 {
-            break;
-        }
-
-        print!("{line}");
-        line.clear();
+    let result = count(&args)?;
+    if let Some(outfile) = args.out_file {
+        let mut f = File::create(outfile)?;
+        f.write_all(result.as_bytes())?;
+    } else {
+        print!("{result}");
     }
 
     Ok(())
+}
+
+fn count(args: &Args) -> Result<String> {
+    let mut file = open(&args.in_file).map_err(|e| anyhow!("{}: {e}", args.in_file))?;
+    let mut line = String::new();
+    let mut count = 0;
+    let mut char_tracker = String::new();
+    let mut result = String::new();
+
+    loop {
+        let bytes = file.read_line(&mut line)?;
+
+        if line == char_tracker {
+            count += 1;
+        } else if char_tracker.is_empty() {
+            char_tracker = line.clone();
+            count = 1;
+        } else {
+            result.push_str(
+                format!(
+                    "{}{char_tracker}",
+                    if args.count {
+                        format!("{:>4} ", count.to_string())
+                    } else {
+                        "".to_string()
+                    },
+                )
+                .as_str(),
+            );
+
+            char_tracker = line.clone();
+            count = 1;
+        }
+
+        if bytes == 0 {
+            return Ok(result);
+        }
+
+        line.clear();
+    }
 }
 
 fn main() {
